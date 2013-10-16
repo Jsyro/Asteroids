@@ -55,7 +55,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		}
 
 
-
 	}
 
 	return (int) msg.wParam;
@@ -105,9 +104,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	hInst = hInstance; // Store instance handle in our global variable
 
-	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
+	hWnd = CreateWindow(szWindowClass, szTitle,   WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,
+		200, 100, WNDWIDTH, WNDHEIGHT, NULL, NULL, hInstance, NULL);
+	
 	if (!hWnd)
 	{
 		return FALSE;
@@ -163,7 +162,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Draw a red line
 		HPEN hLinePen;
 		COLORREF qLineColor;
-		qLineColor = RGB(255, 0, 0);
+		qLineColor = RGB(0, 0, 0);
 		hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
 		hPenOld = (HPEN)SelectObject(hdc, hLinePen);
 
@@ -215,7 +214,24 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+/*
+public class ship {
 
+	float xPos, yPos, xVel, yVel, rot;
+	int rad;
+
+	public ship()
+	{
+		xPos = 0;
+		yPos = 0;
+		xVel = 0;
+		yVel = 0;
+
+
+	}
+
+}
+*/
 /*
 =======================
 SHIP:
