@@ -67,6 +67,11 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 81d9f1ec495bed4281d9b78f69b3cffb8ce1ec97
 	}
 	return (int) msg.wParam;
 }
@@ -113,9 +118,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	hInst = hInstance; // Store instance handle in our global variable
 
-	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
+	hWnd = CreateWindow(szWindowClass, szTitle,   WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,
+		200, 100, WNDWIDTH, WNDHEIGHT, NULL, NULL, hInstance, NULL);
+	
 	if (!hWnd)
 	{
 		return FALSE;
@@ -180,11 +185,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (bDrawLine)
 		{
 		// Draw a red line
+<<<<<<< HEAD
 			HPEN hLinePen;
 			COLORREF qLineColor;
 			qLineColor = RGB(255, 0, 0);
 			hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
 			hPenOld = (HPEN)SelectObject(hdc, hLinePen);
+=======
+		HPEN hLinePen;
+		COLORREF qLineColor;
+		qLineColor = RGB(0, 0, 0);
+		hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
+		hPenOld = (HPEN)SelectObject(hdc, hLinePen);
+>>>>>>> 81d9f1ec495bed4281d9b78f69b3cffb8ce1ec97
 
 			MoveToEx(hdc, 100, 100, NULL);
 			LineTo(hdc, 500, 250);
@@ -255,11 +268,51 @@ int SHIP::drawShip(HDC hdc, HPEN hShipPen)
 	// THIS NEEDS TO BE DONE 
 	// SEBASTION
 
+<<<<<<< HEAD
 	//MoveToEx(hdc, 100, 100, NULL);
 	//LineTo(hdc, 500, 250);
 
 	return 0;
 }
+=======
+/*
+public class ship {
+
+	float xPos, yPos, xVel, yVel, rot;
+	int rad;
+
+	public ship()
+	{
+		xPos = 0;
+		yPos = 0;
+		xVel = 0;
+		yVel = 0;
+
+
+	}
+
+}
+*/
+/*
+=======================
+SHIP:
+		--	Positions are changed by velocitys and used for painting
+			(Type Cast when painting)
+float		Xpos	
+float		Ypos
+
+		--	Velocities are changed with key presses
+			No key means constant velocity
+float		Xvel
+float		Yvel
+		
+		--	Rotation determines vector for bullets
+float/int	Rot
+
+		--	Radius is needed for collision detection
+int			Rad
+
+>>>>>>> 81d9f1ec495bed4281d9b78f69b3cffb8ce1ec97
 
 /*
 ========================
