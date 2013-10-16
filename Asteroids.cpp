@@ -67,11 +67,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 81d9f1ec495bed4281d9b78f69b3cffb8ce1ec97
 	}
 	return (int) msg.wParam;
 }
@@ -185,19 +180,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (bDrawLine)
 		{
 		// Draw a red line
-<<<<<<< HEAD
+
 			HPEN hLinePen;
 			COLORREF qLineColor;
 			qLineColor = RGB(255, 0, 0);
 			hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
 			hPenOld = (HPEN)SelectObject(hdc, hLinePen);
-=======
-		HPEN hLinePen;
-		COLORREF qLineColor;
-		qLineColor = RGB(0, 0, 0);
-		hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
-		hPenOld = (HPEN)SelectObject(hdc, hLinePen);
->>>>>>> 81d9f1ec495bed4281d9b78f69b3cffb8ce1ec97
 
 			MoveToEx(hdc, 100, 100, NULL);
 			LineTo(hdc, 500, 250);
@@ -268,13 +256,13 @@ int SHIP::drawShip(HDC hdc, HPEN hShipPen)
 	// THIS NEEDS TO BE DONE 
 	// SEBASTION
 
-<<<<<<< HEAD
+
 	//MoveToEx(hdc, 100, 100, NULL);
 	//LineTo(hdc, 500, 250);
 
 	return 0;
 }
-=======
+
 /*
 public class ship {
 
