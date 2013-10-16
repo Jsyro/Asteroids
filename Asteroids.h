@@ -4,3 +4,11 @@
 
 #define SCREEN_WIDTH	 1200
 #define SCREEN_HEIGHT	  675
+
+#define LEFT			VK_LEFT
+#define UP				VK_UP
+#define RIGHT			VK_RIGHT
+#define DOWN			VK_DOWN
+
+#define TIMER_ID		140
+

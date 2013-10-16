@@ -10,6 +10,7 @@
 class SHIP
 {
 	public:
+		int xDir, yDir;
 		float xPos, yPos, xVel, yVel, Rot;
 		int Rad;
 		int drawShip(HDC, HPEN);	
@@ -143,8 +144,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
+	SetTimer(hWnd,TIMER_ID, 50,NULL);
+
 	switch (message)
 	{
+	case WM_TIMER:
+		///What happens every 1/60th of a second
+
+
+
+
+
+
+			bDrawLine = !bDrawLine;		
+			InvalidateRect(hWnd, NULL, true);
+			break;
+	
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
@@ -158,7 +173,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
 		case IDM_LINE:
-			bDrawLine = !bDrawLine;
 			InvalidateRect(hWnd, NULL, true);
 			break;
 		case IDM_ELLIPSE:
@@ -168,11 +182,50 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
-
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
+	
+	case WM_KEYDOWN:	
+		switch(wParam)
+		{
+		case LEFT:
+			Ship.xDir += -1;
+			break;
+		case UP:
+			Ship.yDir += +1;
+			break;
+		case RIGHT:
+			Ship.xDir += +1;
+			break;
+		case DOWN:
+			Ship.yDir += -1;
+			break;
+		default:
+			break;
+		}
+		break;
+		
+	case WM_KEYUP:
+		switch (wParam)
+		{
+		case LEFT:
+			Ship.xDir -= -1;
+			break;
+		case UP:
+			Ship.yDir -= +1;
+			break;
+		case RIGHT:
+			Ship.xDir -= +1;
+			break;
+		case DOWN:
+			Ship.yDir -= -1;
+			break;
+		default:
+			break;
+		}		
+	
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		HPEN hPenOld;
@@ -209,18 +262,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			DeleteObject(hEllipsePen);
 		}
 		
-			HPEN hShipPen;
-			COLORREF qShipColor;
-			qShipColor = RGB(0, 0, 0);
-			hShipPen = CreatePen(PS_SOLID, 3, qShipColor);
-			hPenOld = (HPEN)SelectObject(hdc, hShipPen);
-				
-			Ship.drawShip(hdc,hShipPen);
+		HPEN hShipPen;
+		COLORREF qShipColor;
+		qShipColor = RGB(0, 0, 0);
+		hShipPen = CreatePen(PS_SOLID, 3, qShipColor);
+		hPenOld = (HPEN)SelectObject(hdc, hShipPen);
+			
+		Ship.drawShip(hdc,hShipPen);
 
-			SelectObject(hdc, hPenOld);
-			DeleteObject(hShipPen);
+		SelectObject(hdc, hPenOld);
+		DeleteObject(hShipPen);
 		
-
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
@@ -257,30 +309,13 @@ int SHIP::drawShip(HDC hdc, HPEN hShipPen)
 	// SEBASTION
 
 
-	//MoveToEx(hdc, 100, 100, NULL);
-	//LineTo(hdc, 500, 250);
+//	MoveToEx(hdc, 100, 100, NULL);
+//	LineTo(hdc, 500, 250);
 
 	return 0;
 }
 
-/*
-public class ship {
 
-	float xPos, yPos, xVel, yVel, rot;
-	int rad;
-
-	public ship()
-	{
-		xPos = 0;
-		yPos = 0;
-		xVel = 0;
-		yVel = 0;
-
-
-	}
-
-}
-*/
 /*
 =======================
 SHIP:
@@ -300,7 +335,6 @@ float/int	Rot
 		--	Radius is needed for collision detection
 int			Rad
 
->>>>>>> 81d9f1ec495bed4281d9b78f69b3cffb8ce1ec97
 
 /*
 ========================
@@ -330,40 +364,4 @@ float/int	Rot
 int			Rad
 
 int[10]	Array containing the variance +/- off Rad on graphic 
-
-
 */
-/*	public ship()
-	{
-		xPos = SCREEN_WIDTH/2;
-		yPos = SCREEN_HEIGHT/2;
-		xVel = 0;
-		yVel = 0;
-		Rot = 0;
-		Rad = SHIP_RADIUS;
-	}
-
-
-	public void drawShip(){
-	}
-}
-/*
-		=======================
-SHIP:
---	Positions are changed by velocitys and used for painting
-(Type Cast when painting)
-float		Xpos	
-float		Ypos
-
---	Velocities are changed with key presses
-No key means constant velocity
-float		Xvel
-float		Yvel
-
---	Rotation determines vector for bullets
-float/int	Rot
-
---	Radius is needed for collision detection
-int			Rad
-*/
-
