@@ -11,6 +11,8 @@
 #define IDM_ABOUT				104
 #define IDM_EXIT				105
 #define IDM_START				115
+#define IDM_LINE				116
+#define IDM_ELLIPSE				117
 #define IDI_ASTEROIDS			107
 #define IDI_SMALL				108
 #define IDC_ASTEROIDS			109

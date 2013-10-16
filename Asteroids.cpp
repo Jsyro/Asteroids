@@ -3,20 +3,34 @@
 
 #include "stdafx.h"
 #include "Asteroids.h"
-#include <stdio.h>
+
 
 #define MAX_LOADSTRING 100
+
+class SHIP
+{
+	public:
+		float xPos, yPos, xVel, yVel, Rot;
+		int Rad;
+		int drawShip(HDC, HPEN);	
+};
+
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
+SHIP Ship;
+
+bool bDrawLine	= false;
+bool bDrawEllipse = false;
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+int					drawShip(HDC, HPEN);
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 					   _In_opt_ HINSTANCE hPrevInstance,
@@ -53,15 +67,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-
-
-
 	}
-
 	return (int) msg.wParam;
 }
-
-
 
 //
 //  FUNCTION: MyRegisterClass()
@@ -143,15 +151,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
 		case IDM_START:
 			::MessageBox(hWnd, _T("Would you like to play a game?"), _T("Start"), MB_YESNO | MB_ICONQUESTION);
 			break;
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_LINE:
+			bDrawLine = !bDrawLine;
+			InvalidateRect(hWnd, NULL, true);
+			break;
+		case IDM_ELLIPSE:
+			bDrawEllipse = !bDrawEllipse;
+			InvalidateRect(hWnd, NULL, true);
+			break;		
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -160,30 +177,49 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hdc = BeginPaint(hWnd, &ps);
 		HPEN hPenOld;
 
+		if (bDrawLine)
+		{
 		// Draw a red line
-		HPEN hLinePen;
-		COLORREF qLineColor;
-		qLineColor = RGB(255, 0, 0);
-		hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
-		hPenOld = (HPEN)SelectObject(hdc, hLinePen);
+			HPEN hLinePen;
+			COLORREF qLineColor;
+			qLineColor = RGB(255, 0, 0);
+			hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
+			hPenOld = (HPEN)SelectObject(hdc, hLinePen);
 
-		MoveToEx(hdc, 100, 100, NULL);
-		LineTo(hdc, 500, 250);
+			MoveToEx(hdc, 100, 100, NULL);
+			LineTo(hdc, 500, 250);
 
-		SelectObject(hdc, hPenOld);
-		DeleteObject(hLinePen);
+			SelectObject(hdc, hPenOld);
+			DeleteObject(hLinePen);
+		}
 
+		if (bDrawEllipse)
+		{
 		// Draw a blue ellipse
-		HPEN hEllipsePen;
-		COLORREF qEllipseColor;
-		qEllipseColor = RGB(0, 0, 255);
-		hEllipsePen = CreatePen(PS_SOLID, 3, qEllipseColor);
-		hPenOld = (HPEN)SelectObject(hdc, hEllipsePen);
+			HPEN hEllipsePen;
+			COLORREF qEllipseColor;
+			qEllipseColor = RGB(0, 0, 255);
+			hEllipsePen = CreatePen(PS_SOLID, 3, qEllipseColor);
+			hPenOld = (HPEN)SelectObject(hdc, hEllipsePen);
+				
+			Arc(hdc, 100, 100, 500, 250, 0, 0, 0, 0);
 
-		Arc(hdc, 100, 100, 500, 250, 0, 0, 0, 0);
+			SelectObject(hdc, hPenOld);
+			DeleteObject(hEllipsePen);
+		}
+		
+			HPEN hShipPen;
+			COLORREF qShipColor;
+			qShipColor = RGB(0, 0, 0);
+			hShipPen = CreatePen(PS_SOLID, 3, qShipColor);
+			hPenOld = (HPEN)SelectObject(hdc, hShipPen);
+				
+			Ship.drawShip(hdc,hShipPen);
 
-		SelectObject(hdc, hPenOld);
-		DeleteObject(hEllipsePen);
+			SelectObject(hdc, hPenOld);
+			DeleteObject(hShipPen);
+		
+
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
@@ -214,40 +250,30 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return (INT_PTR)FALSE;
 }
+int SHIP::drawShip(HDC hdc, HPEN hShipPen)
+{
+	// THIS NEEDS TO BE DONE 
+	// SEBASTION
 
+	//MoveToEx(hdc, 100, 100, NULL);
+	//LineTo(hdc, 500, 250);
+
+	return 0;
+}
 
 /*
-=======================
-SHIP:
-		--	Positions are changed by velocitys and used for painting
-			(Type Cast when painting)
-float		Xpos	
-float		Ypos
-
-		--	Velocities are changed with key presses
-			No key means constant velocity
-float		Xvel
-float		Yvel
-		
-		--	Rotation determines vector for bullets
-float/int	Rot
-
-		--	Radius is needed for collision detection
-int			Rad
-
-
 ========================
 Bullets:
-		-- Needed for drawing and collision
-			(Type Cast when painting)
+-- Needed for drawing and collision
+(Type Cast when painting)
 float		Xpos
 float		Ypos
 
-		-- Xvel^2 + Yvel^2 = (CONSTANT + (ShipXvel^2 + ShipYvel^2))
+-- Xvel^2 + Yvel^2 = (CONSTANT + (ShipXvel^2 + ShipYvel^2))
 float		Xvel
 float		Yvel
-	
-		-- colision detection
+
+-- colision detection
 int 		Rad
 
 ==========================
@@ -255,14 +281,48 @@ Asteroids:
 
 float		Xpos
 float 		Ypos
-	
+
 float		Xvel
 float		Yvel
-		
+
 float/int	Rot
 int			Rad
-	
+
 int[10]	Array containing the variance +/- off Rad on graphic 
 
 
 */
+/*	public ship()
+	{
+		xPos = SCREEN_WIDTH/2;
+		yPos = SCREEN_HEIGHT/2;
+		xVel = 0;
+		yVel = 0;
+		Rot = 0;
+		Rad = SHIP_RADIUS;
+	}
+
+
+	public void drawShip(){
+	}
+}
+/*
+		=======================
+SHIP:
+--	Positions are changed by velocitys and used for painting
+(Type Cast when painting)
+float		Xpos	
+float		Ypos
+
+--	Velocities are changed with key presses
+No key means constant velocity
+float		Xvel
+float		Yvel
+
+--	Rotation determines vector for bullets
+float/int	Rot
+
+--	Radius is needed for collision detection
+int			Rad
+*/
+
