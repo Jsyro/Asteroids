@@ -10,10 +10,25 @@
 class SHIP
 {
 	public:
-		int xDir, yDir;
+		// Attributes
+		int xDir, yDir, Spin;
 		float xPos, yPos, xVel, yVel, Rot;
 		int Rad;
 		int drawShip(HDC, HPEN);	
+		void update();
+		void shoot();
+};
+
+class ROCK
+{
+	public:
+		// Attributes
+		float		 xPos, yPos, Rot;
+		static float xVel, yVel;
+		int Rad;
+		int Var[10];
+		//Functions
+
 };
 
 
@@ -22,6 +37,8 @@ HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 SHIP Ship;
+ROCK Rocks[20]; 
+//BULLETS Bullets[20];
 
 bool bDrawLine	= false;
 bool bDrawEllipse = false;
@@ -32,6 +49,7 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 int					drawShip(HDC, HPEN);
+void				update();
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 					   _In_opt_ HINSTANCE hPrevInstance,
@@ -57,12 +75,16 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ASTEROIDS));
+	GetMessage(&msg, NULL, 0, 0);
+
+	SetTimer(msg.hwnd,TIMER_ID, 16, NULL);
+	// sends WM_TIMER to the message queue every 1/60th of a second.
+
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		// position calculations here
-
 		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
 		{
 			TranslateMessage(&msg);
@@ -115,7 +137,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	hInst = hInstance; // Store instance handle in our global variable
 
 	hWnd = CreateWindow(szWindowClass, szTitle,   WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX,
-		200, 100, WNDWIDTH, WNDHEIGHT, NULL, NULL, hInstance, NULL);
+		100, 50, WNDWIDTH, WNDHEIGHT, NULL, NULL, hInstance, NULL);
 	
 	if (!hWnd)
 	{
@@ -143,19 +165,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
-
-	SetTimer(hWnd,TIMER_ID, 50,NULL);
+	
 
 	switch (message)
 	{
 	case WM_TIMER:
 		///What happens every 1/60th of a second
-
-
-
-
-
-
+			Ship.update();
+		//	Rocks.update();
+		//	Bullets.update();
+		// Detect Collision
+		
+		
+		
+		
 			bDrawLine = !bDrawLine;		
 			InvalidateRect(hWnd, NULL, true);
 			break;
@@ -202,6 +225,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case DOWN:
 			Ship.yDir += -1;
 			break;
+		case 'a':
+			Ship.Spin += -1;
+			break;
+		case 'd':
+			Ship.Spin += +1;
+			break;
 		default:
 			break;
 		}
@@ -222,6 +251,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case DOWN:
 			Ship.yDir -= -1;
 			break;
+		case 'a':
+			Ship.Spin -= -1;
+			break;
+		case 'd':
+			Ship.Spin -= +1;
+			break;
 		default:
 			break;
 		}		
@@ -240,8 +275,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
 			hPenOld = (HPEN)SelectObject(hdc, hLinePen);
 
-			MoveToEx(hdc, 100, 100, NULL);
-			LineTo(hdc, 500, 250);
+			MoveToEx(hdc, 0, 0, NULL);
+			LineTo(hdc, 50, 50);
 
 			SelectObject(hdc, hPenOld);
 			DeleteObject(hLinePen);
@@ -315,6 +350,20 @@ int SHIP::drawShip(HDC hdc, HPEN hShipPen)
 	return 0;
 }
 
+void SHIP::update()
+{
+	xPos += xVel;
+	yPos += yVel;
+
+	xVel += xDir; 
+	yVel += yDir;
+
+	Rot += Spin;
+}
+
+void SHIP::shoot(){
+
+}
 
 /*
 =======================
