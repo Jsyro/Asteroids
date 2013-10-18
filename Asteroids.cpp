@@ -6,17 +6,20 @@
 
 
 #define MAX_LOADSTRING 100
+#define DEBUG			1
 
 class SHIP
 {
-	public:
-		// Attributes
-		int xDir, yDir, Spin;
-		float xPos, yPos, xVel, yVel, Rot;
-		int Rad;
-		int drawShip(HDC, HPEN);	
-		void update();
-		void shoot();
+public:
+	// Attributes
+	bool lDir, uDir, rDir, dDir, rSpin, lSpin; 
+	float xPos, yPos, xVel, yVel, Rot;
+	int Rad, L;
+	//Functions
+	int drawShip(HDC, HPEN);	
+	void update();
+	void shoot();
+	SHIP();
 };
 
 class ROCK
@@ -28,7 +31,6 @@ class ROCK
 		int Rad;
 		int Var[10];
 		//Functions
-
 };
 
 
@@ -36,9 +38,10 @@ class ROCK
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
-SHIP Ship;
+SHIP Player;
 ROCK Rocks[20]; 
 //BULLETS Bullets[20];
+FILE *foutp;
 
 bool bDrawLine	= false;
 bool bDrawEllipse = false;
@@ -59,7 +62,11 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	// TODO: Place code here.
+	Player.xPos = SCREEN_WIDTH/2;
+	Player.yPos = SCREEN_HEIGHT/2;
+	
+	fopen_s(&foutp, "out.txt", "w");
+
 	MSG msg;
 	HACCEL hAccelTable;
 
@@ -171,12 +178,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_TIMER:
 		///What happens every 1/60th of a second
-			Ship.update();
+			Player.update();
 		//	Rocks.update();
 		//	Bullets.update();
-		// Detect Collision
-		
-		
+		//	Detect Collision
 		
 		
 			bDrawLine = !bDrawLine;		
@@ -214,22 +219,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case LEFT:
-			Ship.xDir += -1;
+			Player.lDir = true;
 			break;
 		case UP:
-			Ship.yDir += +1;
+			Player.uDir = true;
 			break;
 		case RIGHT:
-			Ship.xDir += +1;
+			Player.rDir = true;
 			break;
 		case DOWN:
-			Ship.yDir += -1;
+			Player.dDir = true;
 			break;
-		case 'a':
-			Ship.Spin += -1;
+		case SPIN_LEFT:
+			Player.lSpin = true;
 			break;
-		case 'd':
-			Ship.Spin += +1;
+		case SPIN_RIGHT:
+			Player.rSpin = true;
 			break;
 		default:
 			break;
@@ -240,22 +245,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case LEFT:
-			Ship.xDir -= -1;
+			Player.lDir = false;
 			break;
 		case UP:
-			Ship.yDir -= +1;
+			Player.uDir = false;
 			break;
 		case RIGHT:
-			Ship.xDir -= +1;
+			Player.rDir = false;
 			break;
 		case DOWN:
-			Ship.yDir -= -1;
+			Player.dDir = false;
 			break;
-		case 'a':
-			Ship.Spin -= -1;
+		case SPIN_LEFT:
+			Player.lSpin = false;
 			break;
-		case 'd':
-			Ship.Spin -= +1;
+		case SPIN_RIGHT:
+			Player.rSpin = false;
 			break;
 		default:
 			break;
@@ -303,11 +308,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hShipPen = CreatePen(PS_SOLID, 3, qShipColor);
 		hPenOld = (HPEN)SelectObject(hdc, hShipPen);
 			
-		Ship.drawShip(hdc,hShipPen);
+		Player.drawShip(hdc,hShipPen);
 
 		SelectObject(hdc, hPenOld);
 		DeleteObject(hShipPen);
-		
+			
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
@@ -343,9 +348,10 @@ int SHIP::drawShip(HDC hdc, HPEN hShipPen)
 	// THIS NEEDS TO BE DONE 
 	// SEBASTION
 
+	Arc(hdc,((int)(xPos-Rad)),((int)(yPos-Rad)), ((int)(xPos + Rad)),((int)(yPos + Rad)), 0, 0, 0, 0);
 
-//	MoveToEx(hdc, 100, 100, NULL);
-//	LineTo(hdc, 500, 250);
+	MoveToEx(hdc, (int)xPos, (int)yPos, NULL);
+	LineTo(hdc,((int)(xPos + L*cosf(Rot))),((int)(yPos + L*sinf(Rot))));
 
 	return 0;
 }
@@ -355,15 +361,39 @@ void SHIP::update()
 	xPos += xVel;
 	yPos += yVel;
 
-	xVel += xDir; 
-	yVel += yDir;
+	if (xPos > XWRAP) {  xPos -= XWRAP;	}
+	if (xPos < 0)	  {	xPos += XWRAP;	}
 
-	Rot += Spin;
+	if (yPos > YWRAP){	yPos -= YWRAP;	}
+	if (yPos < 0)	{  yPos += YWRAP;	}
+
+	
+	if (DEBUG) {fprintf(foutp, "xVel = %2.1f,\t yVel = %2.1f, Rot = %f\n", xVel, yVel, Rot);}
+
+	if (lDir)  { xVel +=  (float) -ACC_SPEED;}
+	if (uDir)  { yVel +=  (float) -ACC_SPEED;}
+	if (rDir)  { xVel +=  (float)  ACC_SPEED;}
+	if (dDir)  { yVel +=  (float)  ACC_SPEED;}
+	if (rSpin) { Rot  +=  (float)  +SPIN_SPEED;}
+	if (lSpin) { Rot  +=  (float)  -SPIN_SPEED;}
+
+	if (xVel > VEL_MAX)	 {xVel = VEL_MAX;	}
+	if (xVel < -VEL_MAX) {xVel = -VEL_MAX;	}
+
+	if (yVel > VEL_MAX)	 {yVel = VEL_MAX;	}
+	if (yVel < -VEL_MAX) {yVel = -VEL_MAX;	}
 }
 
-void SHIP::shoot(){
-
-}
+SHIP::SHIP()
+{
+	lDir = uDir = rDir = dDir = rSpin = lSpin = false; 
+	xVel = yVel = 0.0;
+	xPos = SCREEN_WIDTH / 2;
+	yPos = SCREEN_HEIGHT / 2;
+	Rad = SHIP_RAD;
+	Rot = 0;
+	L = 35;
+}	
 
 /*
 =======================
