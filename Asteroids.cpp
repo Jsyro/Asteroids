@@ -6,13 +6,13 @@
 
 
 #define MAX_LOADSTRING 100
-#define DEBUG			1
+#define DEBUG			0
 
 class SHIP
 {
 public:
 	// Attributes
-	bool lDir, uDir, rDir, dDir, rSpin, lSpin; 
+	bool forward, rSpin, lSpin; 
 	float xPos, yPos, xVel, yVel, Rot;
 	int Rad, L;
 	//Functions
@@ -182,9 +182,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//	Rocks.update();
 		//	Bullets.update();
 		//	Detect Collision
-		
-		
-			bDrawLine = !bDrawLine;		
+			
 			InvalidateRect(hWnd, NULL, true);
 			break;
 	
@@ -218,23 +216,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:	
 		switch(wParam)
 		{
-		case LEFT:
-			Player.lDir = true;
-			break;
-		case UP:
-			Player.uDir = true;
-			break;
-		case RIGHT:
-			Player.rDir = true;
-			break;
-		case DOWN:
-			Player.dDir = true;
-			break;
 		case SPIN_LEFT:
-			Player.lSpin = true;
+			Player.lSpin	= true;
+			break;
+		case FORWARD:
+			Player.forward	= true;
 			break;
 		case SPIN_RIGHT:
-			Player.rSpin = true;
+			Player.rSpin	= true;
 			break;
 		default:
 			break;
@@ -244,23 +233,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYUP:
 		switch (wParam)
 		{
-		case LEFT:
-			Player.lDir = false;
-			break;
-		case UP:
-			Player.uDir = false;
-			break;
-		case RIGHT:
-			Player.rDir = false;
-			break;
-		case DOWN:
-			Player.dDir = false;
-			break;
 		case SPIN_LEFT:
-			Player.lSpin = false;
+			Player.lSpin	= false;
+			break;
+		case FORWARD:
+			Player.forward	= false;
 			break;
 		case SPIN_RIGHT:
-			Player.rSpin = false;
+			Player.rSpin	= false;
 			break;
 		default:
 			break;
@@ -269,38 +249,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		HPEN hPenOld;
-
-		if (bDrawLine)
-		{
-		// Draw a red line
-
-			HPEN hLinePen;
-			COLORREF qLineColor;
-			qLineColor = RGB(255, 0, 0);
-			hLinePen = CreatePen(PS_SOLID, 7, qLineColor);
-			hPenOld = (HPEN)SelectObject(hdc, hLinePen);
-
-			MoveToEx(hdc, 0, 0, NULL);
-			LineTo(hdc, 50, 50);
-
-			SelectObject(hdc, hPenOld);
-			DeleteObject(hLinePen);
-		}
-
-		if (bDrawEllipse)
-		{
-		// Draw a blue ellipse
-			HPEN hEllipsePen;
-			COLORREF qEllipseColor;
-			qEllipseColor = RGB(0, 0, 255);
-			hEllipsePen = CreatePen(PS_SOLID, 3, qEllipseColor);
-			hPenOld = (HPEN)SelectObject(hdc, hEllipsePen);
-				
-			Arc(hdc, 100, 100, 500, 250, 0, 0, 0, 0);
-
-			SelectObject(hdc, hPenOld);
-			DeleteObject(hEllipsePen);
-		}
 		
 		HPEN hShipPen;
 		COLORREF qShipColor;
@@ -370,12 +318,14 @@ void SHIP::update()
 	
 	if (DEBUG) {fprintf(foutp, "xVel = %2.1f,\t yVel = %2.1f, Rot = %f\n", xVel, yVel, Rot);}
 
-	if (lDir)  { xVel +=  (float) -ACC_SPEED;}
-	if (uDir)  { yVel +=  (float) -ACC_SPEED;}
-	if (rDir)  { xVel +=  (float)  ACC_SPEED;}
-	if (dDir)  { yVel +=  (float)  ACC_SPEED;}
-	if (rSpin) { Rot  +=  (float)  +SPIN_SPEED;}
-	if (lSpin) { Rot  +=  (float)  -SPIN_SPEED;}
+	if (forward)
+	{
+		xVel += (float)ACC_SPEED*cosf(Rot);
+		yVel += (float)ACC_SPEED*sinf(Rot);
+	}
+
+	if (rSpin)	{ Rot  +=  (float)  +SPIN_SPEED;}
+	if (lSpin)	{ Rot  +=  (float)  -SPIN_SPEED;}
 
 	if (xVel > VEL_MAX)	 {xVel = VEL_MAX;	}
 	if (xVel < -VEL_MAX) {xVel = -VEL_MAX;	}
@@ -386,7 +336,7 @@ void SHIP::update()
 
 SHIP::SHIP()
 {
-	lDir = uDir = rDir = dDir = rSpin = lSpin = false; 
+	forward = rSpin = lSpin = false; 
 	xVel = yVel = 0.0;
 	xPos = SCREEN_WIDTH / 2;
 	yPos = SCREEN_HEIGHT / 2;

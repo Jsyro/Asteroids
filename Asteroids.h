@@ -7,12 +7,10 @@
 #define SHIP_RAD		   30
 
 
-#define LEFT			VK_LEFT
-#define UP				VK_UP
-#define RIGHT			VK_RIGHT
-#define DOWN			VK_DOWN
-#define SPIN_LEFT		'A'
-#define SPIN_RIGHT		'D'
+#define FORWARD			VK_UP
+
+#define SPIN_LEFT		VK_LEFT
+#define SPIN_RIGHT		VK_RIGHT
 
 
 #define XWRAP			SCREEN_WIDTH-20
