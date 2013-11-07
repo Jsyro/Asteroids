@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "Asteroids.h"
 
-
 #define MAX_LOADSTRING 100
 #define DEBUG			0
 
@@ -34,14 +33,25 @@ class ROCK
 };
 
 
+class BULLET
+{
+public:
+		float xbPos, ybPos, xbVel, ybVel;
+	static void updateBullets();
+	static void drawBullets(HDC hdc, HPEN hShipPen);
+	BULLET();
+
+};
+
 // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 SHIP Player;
-ROCK Rocks[20]; 
-//BULLETS Bullets[20];
+BULLET *Bullets[MAX_BULLETS];
+//ROCK Rocks[20]; 
 FILE *foutp;
+
 
 bool bDrawLine	= false;
 bool bDrawEllipse = false;
@@ -53,6 +63,20 @@ LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 int					drawShip(HDC, HPEN);
 void				update();
+void				drawBullets(HDC,HPEN);
+int					init();
+
+int init()
+{
+
+
+	Player.xPos = SCREEN_WIDTH/2;
+	Player.yPos = SCREEN_HEIGHT/2;
+	
+	fopen_s(&foutp, "out.txt", "w");
+	return 1;
+}
+
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 					   _In_opt_ HINSTANCE hPrevInstance,
@@ -62,14 +86,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	Player.xPos = SCREEN_WIDTH/2;
-	Player.yPos = SCREEN_HEIGHT/2;
-	
-	fopen_s(&foutp, "out.txt", "w");
-
 	MSG msg;
 	HACCEL hAccelTable;
-
+	init();
 	// Initialize global strings
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_ASTEROIDS, szWindowClass, MAX_LOADSTRING);
@@ -84,7 +103,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ASTEROIDS));
 	GetMessage(&msg, NULL, 0, 0);
 
-	SetTimer(msg.hwnd,TIMER_ID, 16, NULL);
+	SetTimer(msg.hwnd,TIMER_ID, FRAME_TIME, NULL);
 	// sends WM_TIMER to the message queue every 1/60th of a second.
 
 
@@ -179,8 +198,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 		///What happens every 1/60th of a second
 			Player.update();
+  			BULLET::updateBullets();
+			
 		//	Rocks.update();
-		//	Bullets.update();
 		//	Detect Collision
 			
 			InvalidateRect(hWnd, NULL, true);
@@ -216,6 +236,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:	
 		switch(wParam)
 		{
+		case KEY_SHOOT:
+			Player.shoot();
+			break;
 		case SPIN_LEFT:
 			Player.lSpin	= true;
 			break;
@@ -225,6 +248,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case SPIN_RIGHT:
 			Player.rSpin	= true;
 			break;
+
 		default:
 			break;
 		}
@@ -257,6 +281,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hPenOld = (HPEN)SelectObject(hdc, hShipPen);
 			
 		Player.drawShip(hdc,hShipPen);
+ 		BULLET::drawBullets(hdc,hShipPen);
 
 		SelectObject(hdc, hPenOld);
 		DeleteObject(hShipPen);
@@ -306,9 +331,10 @@ int SHIP::drawShip(HDC hdc, HPEN hShipPen)
 
 void SHIP::update()
 {
+
 	xPos += xVel;
 	yPos += yVel;
-
+	
 	if (xPos > XWRAP) {  xPos -= XWRAP;	}
 	if (xPos < 0)	  {	xPos += XWRAP;	}
 
@@ -318,14 +344,18 @@ void SHIP::update()
 	
 	if (DEBUG) {fprintf(foutp, "xVel = %2.1f,\t yVel = %2.1f, Rot = %f\n", xVel, yVel, Rot);}
 
+	xVel *= DRAG;
+	yVel *= DRAG;
+
 	if (forward)
 	{
-		xVel += (float)ACC_SPEED*cosf(Rot);
-		yVel += (float)ACC_SPEED*sinf(Rot);
+		xVel += ACC_SPEED*cosf(Rot);
+		yVel += ACC_SPEED*sinf(Rot);
 	}
 
-	if (rSpin)	{ Rot  +=  (float)  +SPIN_SPEED;}
-	if (lSpin)	{ Rot  +=  (float)  -SPIN_SPEED;}
+
+	if (rSpin)	{ Rot  +=  +SPIN_SPEED;}
+	if (lSpin)	{ Rot  +=  -SPIN_SPEED;}
 
 	if (xVel > VEL_MAX)	 {xVel = VEL_MAX;	}
 	if (xVel < -VEL_MAX) {xVel = -VEL_MAX;	}
@@ -344,6 +374,61 @@ SHIP::SHIP()
 	Rot = 0;
 	L = 35;
 }	
+
+void SHIP::shoot()
+{
+	int i = -1, k;
+	for (k = 0; k < MAX_BULLETS && i == -1; k++)
+	{
+		if (Bullets[k] == NULL)
+		{
+			i = k;
+		}
+	}	
+	if (i == -1) {return;}
+  	BULLET *newBullet = new BULLET();
+	Bullets[i] = newBullet;
+}
+
+void BULLET::updateBullets()
+	{
+		BULLET* temp;
+ 		for (int k = 0; k < MAX_BULLETS; k++)
+		{			
+			if (Bullets[k] == NULL) continue;
+			
+ 			temp = Bullets[k];
+
+			temp->xbPos += temp->xbVel;
+			temp->ybPos += temp->ybVel;
+
+			if (temp->xbPos < 0 || temp->xbPos > XWRAP){Bullets[k] = NULL; continue;} 
+			if (temp->ybPos < 0 || temp->ybPos > YWRAP){Bullets[k] = NULL; continue;} 
+
+			Bullets[k] = temp;
+	
+		}
+	}
+
+void BULLET::drawBullets(HDC hdc, HPEN hShipPen)
+	{
+		BULLET b1;
+		for (int k = 0 ; k < MAX_BULLETS; k++)
+		{
+			if (Bullets[k] == NULL) continue;
+			b1 = *Bullets[k];
+			Arc(hdc,((int)(b1.xbPos-BULLET_SIZE)),((int)(b1.ybPos-BULLET_SIZE)), ((int)(b1.xbPos+BULLET_SIZE)),((int)(b1.ybPos + BULLET_SIZE)), 0, 0, 0, 0);
+		}
+	}
+
+BULLET::BULLET()
+{	
+	xbPos = Player.xPos;
+	ybPos = Player.yPos;
+		
+	xbVel = (float)(Player.xVel*.2 + BULLET_SPEED*cosf(Player.Rot)) ;
+	ybVel = (float)(Player.yVel*.2 + BULLET_SPEED*sinf(Player.Rot));
+}
 
 /*
 =======================
